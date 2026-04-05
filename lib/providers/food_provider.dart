@@ -7,6 +7,7 @@ import '../models/nutrition_info.dart';
 import '../services/ml_service.dart';
 import '../services/meal_service.dart';
 import '../services/gemini_service.dart';
+import '../services/history_service.dart';
 
 // Uncomment to enable Firebase ML:
 // import '../services/firebase_ml_service.dart';
@@ -44,6 +45,7 @@ class FoodProvider extends ChangeNotifier {
   final MLService _mlService = MLService();
   final MealService _mealService = MealService();
   final GeminiService _geminiService = GeminiService();
+  final HistoryService _historyService = HistoryService();
 
   // ── Kriteria 2 Advanced: Firebase ML model download ────────────
   // Uncomment the block below and add firebase_ml_service.dart import:
@@ -93,6 +95,15 @@ class FoodProvider extends ChangeNotifier {
         _topPrediction = _predictions.first;
         _state = AppState.success;
         notifyListeners();
+
+        // Simpan ke riwayat
+        await _historyService.addItem(HistoryItem(
+          id:         DateTime.now().millisecondsSinceEpoch.toString(),
+          foodLabel:  _topPrediction!.label,
+          confidence: _topPrediction!.confidence,
+          imagePath:  image.path,
+          scannedAt:  DateTime.now(),
+        ));
 
         // Load MealDB + Gemini in parallel (Kriteria 3)
         await Future.wait([

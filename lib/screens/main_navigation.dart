@@ -14,16 +14,28 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
-  final _pages = const [
-    HomeScreen(),
-    HistoryScreen(),
-    SettingsScreen(),
-  ];
+  // Key untuk paksa rebuild HistoryScreen setiap kali tab dibuka
+  Key _historyKey = UniqueKey();
+
+  void _setIndex(int i) {
+    setState(() {
+      // Setiap kali tab Riwayat (index 1) dibuka, rebuild ulang
+      if (i == 1) _historyKey = UniqueKey();
+      _currentIndex = i;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          const HomeScreen(),
+          HistoryScreen(key: _historyKey), // key berubah = rebuild = reload data
+          const SettingsScreen(),
+        ],
+      ),
       bottomNavigationBar: _buildNavBar(),
     );
   }
@@ -32,7 +44,11 @@ class _MainNavigationState extends State<MainNavigation> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, -4))],
+        boxShadow: [BoxShadow(
+          color: Colors.black.withOpacity(0.06),
+          blurRadius: 20,
+          offset: const Offset(0, -4),
+        )],
       ),
       child: SafeArea(
         child: Padding(
@@ -49,8 +65,6 @@ class _MainNavigationState extends State<MainNavigation> {
       ),
     );
   }
-
-  void _setIndex(int i) => setState(() => _currentIndex = i);
 }
 
 class _NavItem extends StatelessWidget {
